@@ -24,6 +24,30 @@ var createClass = function () {
   };
 }();
 
+var inherits = function (subClass, superClass) {
+  if (typeof superClass !== "function" && superClass !== null) {
+    throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
+  }
+
+  subClass.prototype = Object.create(superClass && superClass.prototype, {
+    constructor: {
+      value: subClass,
+      enumerable: false,
+      writable: true,
+      configurable: true
+    }
+  });
+  if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
+};
+
+var possibleConstructorReturn = function (self, call) {
+  if (!self) {
+    throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
+  }
+
+  return call && (typeof call === "object" || typeof call === "function") ? call : self;
+};
+
 var exclude = ["constructor"];
 
 var BaseObject = function () {
@@ -106,4 +130,78 @@ BaseObject.getAllMethods = function (objectRef) {
   return BaseObject.prototype.getAllMethods.call(objectRef);
 };
 
-module.exports = BaseObject;
+var attachMethod = function attachMethod(owner, methodName, parent) {
+  owner[methodName] = function () {
+    var args = [];
+    args.push(parent);
+    Array.prototype.slice.call(arguments).forEach(function (arg) {
+      args.push(arg);
+    });
+    return parent[methodName].apply(owner, args);
+  };
+};
+
+var Behavior = function (_BaseObject) {
+  inherits(Behavior, _BaseObject);
+
+  function Behavior() {
+    classCallCheck(this, Behavior);
+
+    var _this = possibleConstructorReturn(this, (Behavior.__proto__ || Object.getPrototypeOf(Behavior)).call(this));
+
+    _this.getBehaviorOwner = function () {
+      return null;
+    };
+    _this.isBehaviorAttached = function () {
+      return _this.getBehaviorOwner() !== null;
+    };
+    _this.detachBehavior = function () {
+      return undefined;
+    };
+    return _this;
+  }
+
+  createClass(Behavior, [{
+    key: "attachBehavior",
+    value: function attachBehavior(component) {
+      var self = this,
+          owner = component,
+          attachedPropNames = [],
+          methods = BaseObject.prototype.getAllMethods.call(self),
+          ownerMethods = BaseObject.prototype.getAllMethods.call(owner),
+          methodName;
+
+      for (methodName in methods) {
+        methodName = methods[methodName];
+        switch (methodName) {
+          case "constructor":
+          case "init":
+          case "attachBehavior":
+          case "detachBehavior":
+          case "isBehaviorAttached":
+          case "getBehaviorOwner":
+            continue;
+        }
+        if (ownerMethods.indexOf(methodName) >= 0) continue;
+        if (typeof self[methodName] === "function") {
+          attachMethod(owner, methodName, this);
+          attachedPropNames.push(methodName);
+        }
+      }
+
+      this.getBehaviorOwner = function () {
+        return owner;
+      };
+
+      this.detachBehavior = function () {
+        attachedPropNames.forEach(function (propName, index) {
+          delete owner[propName];
+        });
+        owner = null;
+      };
+    }
+  }]);
+  return Behavior;
+}(BaseObject);
+
+module.exports = Behavior;
