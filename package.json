@@ -3,15 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
-  "dependencies": {
+  "dependencies": {},
+  "devDependencies": {
     "babel-core": "^6.26.3",
     "babel-preset-env": "^1.7.0",
     "babel-preset-react": "^6.24.1",
     "babelify": "^8.0.0",
     "react": "^16.4.1",
-    "rollup": "^0.62.0"
-  },
-  "devDependencies": {
+    "rollup": "^0.62.0",
+    "rollup-plugin-babel": "^3.0.7",
     "rollup-plugin-includepaths": "^0.2.3"
   },
   "scripts": {
