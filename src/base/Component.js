@@ -7,21 +7,17 @@ export default class Component extends React.Component {
     if ( this.constructor === Component ){
       throw new TypeError("You must extends abstract class Component.");
     }
-    this.__behaviors = null;
+    this.ensureBehaviors();
   }
 
   ensureBehaviors(){
-    if ( this.__behaviors === null ){
-      var self = this;
-      this.__behaviors = this.behaviors();
-      this.__behaviors.forEach( (behavior, i) => {
-        if ( !(behavior.prototype instanceof Behavior) ){
-          console.warn(behavior.constructor + " must be an instance of base/Behavior");
-          return;
-        }
-        behavior.attach(self);
-      } );
-    }
+    this.behaviors().forEach( (behavior, i) => {
+      if ( !(behavior.prototype instanceof Behavior) ){
+        console.warn(behavior.constructor + " must be an instance of base/Behavior");
+        return;
+      }
+      behavior.attach(self);
+    } );
   }
 
   /**

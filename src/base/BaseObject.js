@@ -10,6 +10,14 @@ class BaseObject {
   init(){
   }
 
+  className(){
+    var proto = Object.getPrototypeOf(this);
+    if ( proto && proto.constructor && proto.constructor.name ){
+      return proto.constructor.name;
+    }
+    return null;
+  }
+
   getAllProperties(){
     var props = {},
       self = this;
@@ -35,19 +43,23 @@ class BaseObject {
     } );
     var ref = Object.getPrototypeOf(self);
     while ( ref ){
+      if ( ref === Object.prototype ) break;
       Object.getOwnPropertyNames(ref.constructor.prototype).forEach( (prop) => {
         if ( props.indexOf(prop) < 0 && exclude.indexOf(prop) < 0 ){
           props.push(prop);
         }
       } );
       ref = Object.getPrototypeOf(ref);
-      if ( ref === Object.prototype ) break;
     }
     return props.sort();
   }
 
   hasMethod(propName){
     return this.getAllMethods().indexOf(propName) >= 0;
+  }
+
+  instanceOf(classWrapper){
+    return this instanceof classWrapper;
   }
 };
 
@@ -73,5 +85,12 @@ BaseObject.getAllMethods = (objectRef) => {
   return BaseObject.prototype.getAllMethods.call(objectRef);
 };
 
+/**
+ * Static method checks if an object is an instance of
+ * the provided class wrapper
+ */
+BaseObject.instanceOf = (objectRef, classWrapper) => {
+  return BaseObject.prototype.instanceOf.call(objectRef, classWrapper);
+};
 
 export default BaseObject;
